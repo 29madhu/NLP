@@ -1,0 +1,27 @@
+class FSA:
+    def __init__(self):
+        self.state = 'start'
+
+    def transition(self, char):
+        if self.state == 'start':
+            self.state = 'state_a' if char == 'a' else 'start'
+        elif self.state == 'state_a':
+            self.state = 'state_ab' if char == 'b' else 'state_a' if char == 'a' else 'start'
+        elif self.state == 'state_ab':
+            self.state = 'state_a' if char == 'a' else 'start'
+
+    def is_accepting(self):
+        return self.state == 'state_ab'
+
+    def process_string(self, input_string):
+        self.state = 'start'
+        for char in input_string:
+            self.transition(char)
+        return self.is_accepting()
+
+fsa = FSA()
+test_strings = ["ab", "aab", "abb", "aaab", "baba"]
+
+for string in test_strings:
+    result = "accepted" if fsa.process_string(string) else "rejected"
+    print(f"'{string}' is {result} by the automaton.")
