@@ -1,0 +1,17 @@
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+
+nltk.download('punkt')  
+nltk.download('averaged_perceptron_tagger')  
+text = "Natural Language Processing with NLTK is quite fascinating and useful."
+
+tokens = word_tokenize(text)
+
+pos_tags = nltk.pos_tag(tokens)
+
+print("Text:")
+print(text)
+print("\nPart-of-Speech Tags:")
+for word, tag in pos_tags:
+    print(f"{word}: {tag}")
