@@ -1,0 +1,15 @@
+import random
+from collections import defaultdict
+text = "this is a simple example to demonstrate a bigram model for text generation using python code"
+
+words = text.split()
+bigrams = defaultdict(list)
+for w1, w2 in zip(words, words[1:]):
+    bigrams[w1].append(w2)
+start_word = 'this'
+generated_text = [start_word]
+for _ in range(9):
+    next_word = random.choice(bigrams[generated_text[-1]])
+    generated_text.append(next_word)
+
+print(' '.join(generated_text))
