@@ -1,0 +1,13 @@
+import re
+from nltk.tokenize import word_tokenize
+def initial_tagger(tokens):
+    return [(token, 'VBD' if token.endswith('ed') else 'NN') for token in tokens]
+def apply_rule(tags):
+    return [(word, 'VBZ' if word == 'is' and prev_tag == 'NN' else tag)
+            for prev_tag, (word, tag) in zip(['NN'] + [t[1] for t in tags[:-1]], tags)]
+text = "The quick brown fox is jumping."
+tokens = word_tokenize(text)
+tags = initial_tagger(tokens)
+tags = apply_rule(tags)
+for word, tag in tags:
+    print(f"{word}: {tag}")
