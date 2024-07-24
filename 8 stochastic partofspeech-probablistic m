@@ -1,0 +1,16 @@
+import nltk
+from nltk.corpus import treebank
+from nltk.tag import hmm
+from nltk.tokenize import word_tokenize
+nltk.download('treebank')
+nltk.download('punkt')
+
+train_sents = treebank.tagged_sents()
+trainer = hmm.HiddenMarkovModelTrainer()
+tagger = trainer.train(train_sents)
+text = "Natural language processing with stochastic models is fascinating."
+tokens = word_tokenize(text)
+tagged_text = tagger.tag(tokens)
+print("Part-of-Speech Tags:")
+for word, tag in tagged_text:
+    print(f"{word}: {tag}")
