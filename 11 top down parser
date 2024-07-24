@@ -1,0 +1,33 @@
+
+grammar = {
+    'S': ['NP VP'],
+    'NP': ['Det Noun'],
+    'VP': ['Verb NP'],
+    'Det': ['the'],
+    'Noun': ['cat', 'dog'],
+    'Verb': ['chases']
+}
+
+def parse(tokens):
+    def match(symbol, tokens):
+        if not tokens or symbol not in grammar:
+            return False, tokens
+        if symbol in grammar:
+            for production in grammar[symbol]:
+                temp_tokens = tokens
+                for part in production.split():
+                    matched, temp_tokens = match(part, temp_tokens)
+                    if not matched:
+                        break
+                else:
+                    return True, temp_tokens
+        else:
+            return tokens[0] == symbol, tokens[1:]
+        return False, tokens
+
+    return match('S', tokens)[0]
+sentence = "the cat chases the dog".split()
+if parse(sentence):
+    print("Sentence is valid according to the grammar.")
+else:
+    print("Sentence is invalid according to the grammar.")
