@@ -1,0 +1,25 @@
+import re
+
+text = "The quick brown fox jumps over the lazy dog. The dog barks."
+
+matches = re.findall(r"dog", text)
+print(f"Matches: {matches}")
+matches = re.findall(r"the", text, re.IGNORECASE)
+print(f"Case-insensitive matches: {matches}")
+matches = re.findall(r"\bT\w+", text)
+print(f"Words starting with 'T': {matches}")
+
+text_with_digits = "Phone: 123-456-7890, Zip: 12345"
+matches = re.findall(r"\d+", text_with_digits)
+print(f"Digits: {matches}")
+
+email_text = "Email: support@example.com"
+matches = re.findall(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", email_text)
+print(f"Email addresses: {matches}")
+match = re.search(r"fox", text)
+if match:
+    print(f"First match: {match.group()} at index {match.start()}")
+new_text = re.sub(r"dog", "cat", text)
+print(f"Replaced text: {new_text}")
+split_text = re.split(r"\s", text)
+print(f"Split text: {split_text}")
