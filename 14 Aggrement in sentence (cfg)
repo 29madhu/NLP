@@ -1,0 +1,58 @@
+class AgreementChecker:
+    def __init__(self, grammar):
+        self.grammar = grammar
+
+    def parse(self, tokens):
+        chart = [[] for _ in range(len(tokens) + 1)]
+        start_rule = list(self.grammar.keys())[0]
+        chart[0].append((start_rule, [], self.grammar[start_rule][0], 0, []))
+
+        for i in range(len(tokens) + 1):
+            for state in chart[i]:
+                if state[2]:
+                    next_symbol = state[2][0]
+                    if next_symbol in self.grammar:
+                        for production in self.grammar[next_symbol]:
+                            chart[i].append((next_symbol, [], production, i, state[4] + [(state[0], state[1], state[2], state[3])]))
+                    elif i < len(tokens) and tokens[i] == next_symbol:
+                        chart[i + 1].append((state[0], state[1] + [next_symbol], state[2][1:], state[3], state[4] + [(state[0], state[1], state[2], state[3])]))
+                else:
+                    for st in chart[state[3]]:
+                        if st[2] and st[2][0] == state[0]:
+                            chart[i].append((st[0], st[1] + [state[0]], st[2][1:], st[3], st[4] + [(state[0], state[1], state[2], state[3])]))
+
+        final_state = next((state for state in chart[-1] if state[0] == start_rule and state[1] == self.grammar[start_rule][0] and not state[2]), None)
+        return self.build_tree(final_state) if final_state else None
+
+    def build_tree(self, state):
+        if not state[4]:
+            return state[0]
+        return (state[0], [self.build_tree(substate) if substate[2] else substate[0] for substate in state[4]])
+
+    def check_agreement(self, tree):
+        if isinstance(tree, str):
+            return True
+        head, children = tree
+        if head == 'S':
+            np, vp = children
+            return self.check_agreement(np) and self.check_agreement(vp) and self.subject_verb_agreement(np, vp)
+        return all(self.check_agreement(child) for child in children)
+
+    def subject_verb_agreement(self, np, vp):
+        nouns_sg = ['he', 'she', 'it', 'noun_sg']
+        nouns_pl = ['they', 'nouns_pl']
+        verbs_sg = ['verb_sg']
+        verbs_pl = ['verb_pl']
+        return (np[1][0] in nouns_sg and vp[1][0] in verbs_sg) or (np[1][0] in nouns_pl and vp[1][0] in verbs_pl)
+
+grammar = {
+    'S': [['NP', 'VP']],
+    'NP': [['noun_sg'], ['nouns_pl']],
+    'VP': [['verb_sg'], ['verb_pl']]
+}
+
+checker = AgreementChecker(grammar)
+tokens = ['noun_sg', 'verb_sg']
+parse_tree = checker.parse(tokens)
+print("Parse tree:", parse_tree)
+print("Agreement check:", checker.check_agreement(parse_tree))
