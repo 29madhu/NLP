@@ -1,0 +1,26 @@
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+
+documents = [
+    "The sky is blue and the sun is shining.",
+    "The sun in the sky is bright.",
+    "We can see the shining sun, the bright sun.",
+    "The sun is a star in the sky.",
+    "The sky is blue and the sun is bright."
+]
+
+query = "bright sun"
+
+vectorizer = TfidfVectorizer()
+tfidf_matrix = vectorizer.fit_transform(documents)
+
+query_vector = vectorizer.transform([query])
+cosine_similarities = cosine_similarity(query_vector, tfidf_matrix).flatten()
+
+ranked_indices = cosine_similarities.argsort()[::-1]
+
+print("Query:", query)
+print("\nDocument Ranking:")
+for i in ranked_indices:
+    print(f"Document {i+1}: {documents[i]} (Score: {cosine_similarities[i]:.4f})")
