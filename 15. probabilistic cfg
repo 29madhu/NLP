@@ -1,17 +1,57 @@
-import nltk
-grammar = nltk.PCFG.fromstring("""
-    S -> NP VP [1.0]
-    VP -> V NP [0.7] | VP PP [0.3]
-    PP -> P NP [1.0]
-    V -> "saw" [1.0]
-    P -> "with" [1.0]
-    NP -> N [0.4] | Det N [0.3] | NP PP [0.3]
-    N -> "John" [0.4] | "Mary" [0.4] | "telescope" [0.2]
-    Det -> "a" [1.0]
-""")
-parser = nltk.ViterbiParser(grammar)
-sentence = "John saw Mary with a telescope".split()
-trees = list(parser.parse(sentence))
-trees.sort(key=lambda tree: -tree.prob())
-for tree in trees:
-    print(tree)
+import numpy as np
+from collections import defaultdict
+
+# Define the PCFG
+rules = {
+    'S': [(['NP', 'VP'], 0.9)],
+    'NP': [(['Det', 'N'], 0.5), (['N'], 0.5)],
+    'VP': [(['V', 'NP'], 0.7), (['V'], 0.3)],
+    'Det': [(['the'], 1.0)],
+    'N': [(['dog'], 0.6), (['cat'], 0.4)],
+    'V': [(['chases'], 0.6), (['sees'], 0.4)]
+}
+
+def cyk_parse(sentence, rules):
+    n = len(sentence)
+    table = defaultdict(lambda: np.zeros((n, n)))
+    back = defaultdict(lambda: np.zeros((n, n), dtype=object))
+
+    # Initialize table with terminal probabilities
+    for j in range(n):
+        word = sentence[j]
+        for lhs, rhs_prob in rules.items():
+            for rhs, prob in rhs_prob:
+                if len(rhs) == 1 and rhs[0] == word:
+                    table[lhs][j, j] = prob
+
+    # Fill the table using CYK algorithm
+    for length in range(2, n+1):  # length of span
+        for start in range(n-length+1):  # start position
+            end = start + length - 1
+            for split in range(start, end):
+                for lhs, rhs_prob in rules.items():
+                    for rhs, prob in rhs_prob:
+                        if len(rhs) == 2:
+                            A, B = rhs
+                            prob_A = table[A][start, split]
+                            prob_B = table[B][split+1, end]
+                            current_prob = prob * prob_A * prob_B
+                            if current_prob > table[lhs][start, end]:
+                                table[lhs][start, end] = current_prob
+                                back[start, end] = (lhs, A, B, start, split, end)
+
+    # Backtracking to retrieve the parse tree
+    def backtrack(start, end):
+        if start == end:
+            return sentence[start]
+        if (start, end) not in back:
+            return f"unparseable ({start}-{end})"
+        lhs, A, B, split_start, split_split, split_end = back[start, end]
+        return f'({lhs} {backtrack(start, split_split)} {backtrack(split_end+1, end)})'
+
+    return backtrack(0, n-1)
+
+# Example sentence
+sentence = ['the', 'dog', 'chases', 'the', 'cat']
+parse_tree = cyk_parse(sentence, rules)
+print(parse_tree)
