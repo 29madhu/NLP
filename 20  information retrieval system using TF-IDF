@@ -1,0 +1,38 @@
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
+
+
+documents = [
+    "The quick brown fox jumps over the lazy dog.",
+    "The dog barks at the fox.",
+    "Foxes are quick and agile.",
+    "The lazy dog sleeps in the sun."
+]
+
+
+def rank_documents(query, documents):
+   
+    vectorizer = TfidfVectorizer()
+
+   
+    tfidf_matrix = vectorizer.fit_transform(documents)
+
+    
+    query_tfidf = vectorizer.transform([query])
+
+    
+    cosine_similarities = cosine_similarity(query_tfidf, tfidf_matrix).flatten()
+
+   
+    ranked_indices = np.argsort(cosine_similarities)[::-1]
+
+   
+    return [(i, cosine_similarities[i]) for i in ranked_indices]
+
+query = "quick fox"
+ranked_docs = rank_documents(query, documents)
+
+print("Ranked Documents:")
+for index, score in ranked_docs:
+    print(f"Document {index}: Score = {score:.4f}")
